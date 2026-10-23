@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tómbola Digital - UBBJ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ubbj: {
+                            wine: '#7B1113', // Guinda institucional UBBJ
+                            darkWine: '#5A0C0E',
+                            accent: '#9E1C20'
+                        },
+                        clinical: {
+                            bone: '#F4F1EA', // Fondo hueso / marfil elegante
+                            card: '#FFFFFF',
+                            text: '#2C3E50',
+                            muted: '#7F8C8D',
+                            border: '#E2DED4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F1EA;
+            color: #2C3E50;
+        }
+        .slot-animation {
+            animation: pulse-scale 0.15s ease-in-out infinite alternate;
+        }
+        @keyframes pulse-scale {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8">
+
+    <!-- Header Institucional -->
+    <header class="max-w-4xl mx-auto w-full text-center mb-8">
+        <div class="inline-block bg-ubbj-wine text-white text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full mb-3 shadow-sm">
+            Universidad para el Bienestar Benito Juárez García (UBBJ)
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-ubbj-darkWine tracking-tight">
+            Tómbola Digital Académica
+        </h1>
+        <p class="text-clinical-muted text-sm sm:text-base mt-1">
+            Sistema interactivo de selección aleatoria y control de tiempo para exposiciones
+        </p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        <!-- Panel de Control / Sorteo (Ocupa 2 columnas) -->
+        <div class="md:col-span-2 bg-clinical-card rounded-2xl shadow-sm border border-clinical-border p-6 sm:p-8 flex flex-col justify-between">
+            <div>
+                <!-- Selector de Modo -->
+                <div class="flex rounded-xl bg-clinical-bone p-1.5 mb-6 border border-clinical-border">
+                    <button id="btnModeStudent" onclick="switchMode('student')" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all bg-ubbj-wine text-white shadow-sm">
+                        Número de Lista (1 - 62)
+                    </button>
+                    <button id="btnModeTeam" onclick="switchMode('team')" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-clinical-text hover:text-ubbj-wine">
+                        Equipos (15 Equipos)
+                    </button>
+                </div>
+
+                <!-- Configuración Extra (Modo Alumnos) -->
+                <div id="studentOptions" class="mb-4 flex items-center justify-between bg-clinical-bone px-4 py-2.5 rounded-lg border border-clinical-border text-xs sm:text-sm">
+                    <span class="text-clinical-text font-medium">Modo sin repetición (Tachar seleccionados)</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="noRepeatToggle" checked class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-ubbj-wine"></div>
+                    </label>
+                </div>
+
+                <!-- Pantalla de Resultado de la Tómbola -->
+                <div class="my-6 bg-clinical-bone border-2 border-dashed border-clinical-border rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+                    <span class="text-xs uppercase tracking-wider text-clinical-muted font-semibold mb-1">Resultado Actual</span>
+                    <div id="drawResult" class="text-4xl sm:text-5xl font-bold text-ubbj-wine tracking-tight">
+                        —
+                    </div>
+                    <p id="drawSubtext" class="text-xs text-clinical-muted mt-2 hidden">Selección aleatoria completada</p>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="space-y-3">
+                <button onclick="startDraw()" id="drawButton" class="w-full py-3.5 px-6 bg-ubbj-wine hover:bg-ubbj-darkWine text-white font-semibold rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 text-base">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    <span>Iniciar Sorteo</span>
+                </button>
+                <div class="flex space-x-2">
+                    <button onclick="resetCurrentMode()" class="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-clinical-text font-medium text-xs sm:text-sm rounded-lg transition-colors border border-clinical-border">
+                        Reiniciar Sorteo Actual
+                    </button>
+                    <button onclick="resetAll()" class="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-red-700 font-medium text-xs sm:text-sm rounded-lg transition-colors border border-clinical-border">
+                        Restaurar Todo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Cronómetro de Exposición -->
+        <div class="bg-clinical-card rounded-2xl shadow-sm border border-clinical-border p-6 flex flex-col justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-ubbj-darkWine mb-3 flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-ubbj-wine" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Tiempo de Exposición</span>
+                </h2>
+                
+                <!-- Selector de Tiempos Preestablecidos -->
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <button onclick="setTimer(5)" id="btnTimer5" class="py-1.5 text-xs font-semibold rounded-lg bg-ubbj-wine text-white transition-all shadow-sm">5 min</button>
+                    <button onclick="setTimer(10)" id="btnTimer10" class="py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-clinical-text hover:bg-gray-200 transition-all border border-clinical-border">10 min</button>
+                    <button onclick="setTimer(15)" id="btnTimer15" class="py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-clinical-text hover:bg-gray-200 transition-all border border-clinical-border">15 min</button>
+                </div>
+
+                <!-- Display del Reloj -->
+                <div id="timerDisplay" class="bg-clinical-bone border border-clinical-border rounded-xl py-6 text-center mb-4">
+                    <span id="timeText" class="text-4xl font-mono font-bold text-ubbj-darkWine">05:00</span>
+                    <span id="timerStatus" class="block text-xs text-clinical-muted mt-1 uppercase tracking-wider">Listo</span>
+                </div>
+            </div>
+
+            <!-- Controles del Cronómetro -->
+            <div class="space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="toggleTimer()" id="btnStartPauseTimer" class="py-2.5 bg-ubbj-wine hover:bg-ubbj-darkWine text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
+                        Iniciar
+                    </button>
+                    <button onclick="resetTimer()" class="py-2.5 bg-gray-100 hover:bg-gray-200 text-clinical-text text-sm font-semibold rounded-lg transition-colors border border-clinical-border">
+                        Reiniciar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pie de página / Autoría -->
+    <footer class="max-w-4xl mx-auto w-full text-center border-t border-clinical-border pt-4 text-xs text-clinical-muted">
+        Creado por: <span class="font-semibold text-ubbj-darkName">Carlos Villa Tobón</span> &bull; Universidad para el Bienestar Benito Juárez García
+    </footer>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        // Estado de la aplicación
+        let currentMode = 'student'; // 'student' o 'team'
+        
+        // Alumnos (1 a 62)
+        let totalStudents = 62;
+        let availableStudents = Array.from({length: totalStudents}, (_, i) => i + 1);
+        let drawnStudents = [];
+
+        // Equipos (15 equipos)
+        let totalTeams = 15;
+        let availableTeams = Array.from({length: totalTeams}, (_, i) => i + 1);
+        let drawnTeams = [];
+
+        // Cronómetro
+        let timerMinutes = 5;
+        let timeLeft = 300; // en segundos
+        let timerInterval = null;
+        let isRunning = false;
+
+        // Elementos DOM
+        const btnModeStudent = document.getElementById('btnModeStudent');
+        const btnModeTeam = document.getElementById('btnModeTeam');
+        const studentOptions = document.getElementById('studentOptions');
+        const drawResult = document.getElementById('drawResult');
+        const drawSubtext = document.getElementById('drawSubtext');
+        const noRepeatToggle = document.getElementById('noRepeatToggle');
+        
+        const timeText = document.getElementById('timeText');
+        const timerStatus = document.getElementById('timerStatus');
+        const btnStartPauseTimer = document.getElementById('btnStartPauseTimer');
+
+        function switchMode(mode) {
+            currentMode = mode;
+            if (mode === 'student') {
+                btnModeStudent.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all bg-ubbj-wine text-white shadow-sm";
+                btnModeTeam.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-clinical-text hover:text-ubbj-wine";
+                studentOptions.style.display = "flex";
+                updateDisplayState();
+            } else {
+                btnModeTeam.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all bg-ubbj-wine text-white shadow-sm";
+                btnModeStudent.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-clinical-text hover:text-ubbj-wine";
+                studentOptions.style.display = "none";
+                updateDisplayState();
+            }
+        }
+
+        function updateDisplayState() {
+            drawSubtext.classList.add('hidden');
+            if (currentMode === 'student') {
+                drawResult.textContent = "—";
+            } else {
+                drawResult.textContent = "—";
+            }
+        }
+
+        function startDraw() {
+            const isNoRepeat = noRepeatToggle.checked;
+
+            if (currentMode === 'student') {
+                if (isNoRepeat && availableStudents.length === 0) {
+                    alert("¡Todos los números de lista ya han sido seleccionados!");
+                    return;
+                }
+                const pool = isNoRepeat ? availableStudents : Array.from({length: totalStudents}, (_, i) => i + 1);
+                
+                // Animación de tómbola
+                let counter = 0;
+                drawResult.classList.add('slot-animation');
+                const interval = setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * pool.length);
+                    drawResult.textContent = pool[randomIndex];
+                    counter++;
+                    if (counter > 12) {
+                        clearInterval(interval);
+                        drawResult.classList.remove('slot-animation');
+                        const finalChoiceIndex = Math.floor(Math.random() * pool.length);
+                        const finalNumber = pool[finalChoiceIndex];
+                        drawResult.textContent = `Nº ${finalNumber}`;
+                        drawSubtext.textContent = `Seleccionado aleatoriamente del 1 al ${totalStudents}`;
+                        drawSubtext.classList.remove('hidden');
+
+                        if (isNoRepeat) {
+                            availableStudents = availableStudents.filter(n => n !== finalNumber);
+                        }
+                    }
+                }, 75);
+
+            } else {
+                if (availableTeams.length === 0) {
+                    alert("¡Todos los equipos ya han participado!");
+                    return;
+                }
+
+                // Animación de tómbola para equipos
+                let counter = 0;
+                drawResult.classList.add('slot-animation');
+                const interval = setInterval(() => {
+                    const randomTeam = availableTeams[Math.floor(Math.random() * availableTeams.length)];
+                    drawResult.textContent = `Eq. ${randomTeam}`;
+                    counter++;
+                    if (counter > 12) {
+                        clearInterval(interval);
+                        drawResult.classList.remove('slot-animation');
+                        const finalTeamIndex = Math.floor(Math.random() * availableTeams.length);
+                        const finalTeamNumber = availableTeams[finalTeamIndex];
+                        
+                        drawResult.textContent = `Equipo médico ${finalTeamNumber}`;
+                        drawSubtext.textContent = `Seleccionado del total de equipos`;
+                        drawSubtext.classList.remove('hidden');
+
+                        availableTeams = availableTeams.filter(t => t !== finalTeamNumber);
+                    }
+                }, 75);
+            }
+        }
+
+        function resetCurrentMode() {
+            if (currentMode === 'student') {
+                availableStudents = Array.from({length: totalStudents}, (_, i) => i + 1);
+                drawResult.textContent = "—";
+                drawSubtext.classList.add('hidden');
+            } else {
+                availableTeams = Array.from({length: totalTeams}, (_, i) => i + 1);
+                drawResult.textContent = "—";
+                drawSubtext.classList.add('hidden');
+            }
+        }
+
+        function resetAll() {
+            resetCurrentMode();
+            resetTimer();
+        }
+
+        // Lógica del Cronómetro
+        function setTimer(minutes) {
+            if (isRunning) toggleTimer();
+            timerMinutes = minutes;
+            timeLeft = minutes * 60;
+            updateTimerDisplay();
+
+            // Actualizar estilos de botones
+            [5, 10, 15].forEach(m => {
+                const btn = document.getElementById(`btnTimer${m}`);
+                if (m === minutes) {
+                    btn.className = "py-1.5 text-xs font-semibold rounded-lg bg-ubbj-wine text-white transition-all shadow-sm";
+                } else {
+                    btn.className = "py-1.5 text-xs font-semibold rounded-lg bg-gray-100 text-clinical-text hover:bg-gray-200 transition-all border border-clinical-border";
+                }
+            });
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timeText.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                btnStartPauseTimer.textContent = "Reanudar";
+                btnStartPauseTimer.className = "py-2.5 bg-ubbj-wine hover:bg-ubbj-darkWine text-white text-sm font-semibold rounded-lg transition-all shadow-sm";
+                timerStatus.textContent = "Pausado";
+            } else {
+                if (timeLeft <= 0) timeLeft = timerMinutes * 60;
+                isRunning = true;
+                btnStartPauseTimer.textContent = "Pausar";
+                btnStartPauseTimer.className = "py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold rounded-lg transition-all shadow-sm";
+                timerStatus.textContent = "En curso...";
+
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                        if (timeLeft === 60) {
+                            timerStatus.textContent = "¡Último minuto!";
+                        }
+                    } else {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        btnStartPauseTimer.textContent = "Iniciar";
+                        btnStartPauseTimer.className = "py-2.5 bg-ubbj-wine hover:bg-ubbj-darkWine text-white text-sm font-semibold rounded-lg transition-all shadow-sm";
+                        timerStatus.textContent = "¡Tiempo finalizado!";
+                        alert("¡El tiempo de exposición ha concluido!");
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            if (isRunning) toggleTimer();
+            timeLeft = timerMinutes * 60;
+            updateTimerDisplay();
+            timerStatus.textContent = "Listo";
+            btnStartPauseTimer.textContent = "Iniciar";
+            btnStartPauseTimer.className = "py-2.5 bg-ubbj-wine hover:bg-ubbj-darkWine text-white text-sm font-semibold rounded-lg transition-all shadow-sm";
+        }
+
+        // Inicializar display del reloj
+        updateTimerDisplay();
+    </script>
+</body>
+</html>
